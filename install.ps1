@@ -49,10 +49,11 @@ if (Test-Path $InstallDir) {
 }
 Write-Host "   Done"
 
-# Run auto patch
+# Run auto patch (with UTF-8 for Vietnamese output)
 Write-Host ""
 Set-Location $InstallDir
-& $PythonCmd patcher.py --auto
+$env:PYTHONIOENCODING = 'utf-8'
+& $PythonCmd patcher.py --all
 
 Write-Host ""
 Write-Host "================================================"

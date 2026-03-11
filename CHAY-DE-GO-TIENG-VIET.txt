@@ -1,0 +1,32 @@
+========================================
+CÁCH CHẠY CLAUDE CODE ĐỂ GÕ TIẾNG VIỆT
+========================================
+
+Bạn đang dùng Windows. Fix chỉ có tác dụng khi chạy Claude Code bằng
+BẢN NPM ĐÃ PATCH, không áp dụng cho file claude.exe (ứng dụng tải về).
+
+--- Cách 1: Dùng launcher (khuyến nghị) ---
+
+PowerShell:
+  & "C:\Users\Hieud\.claude-vn-fix\run-patched-claude.ps1"
+
+CMD:
+  "C:\Users\Hieud\.claude-vn-fix\claude-vn.cmd"
+
+--- Cách 2: Dùng npx ---
+
+  npx @anthropic-ai/claude-code
+
+(Lần đầu sẽ dùng bản trong cache đã được patch.)
+
+--- Nếu bạn gõ trong Cursor (ô chat) ---
+
+Fix này chỉ dành cho Claude Code CLI (terminal/app), không sửa ô chat
+trong Cursor. Hãy thử gõ ở Notepad rồi dán vào Cursor.
+
+--- Sau khi cập nhật Claude Code ---
+
+Chạy lại patch:
+  $env:PYTHONIOENCODING='utf-8'; python "C:\Users\Hieud\.claude-vn-fix\patcher.py" --all
+
+========================================

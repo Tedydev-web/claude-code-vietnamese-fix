@@ -27,10 +27,11 @@ PATCH_MARKER = "/* Vietnamese IME fix */"
 DEL_CHAR = chr(127)  # 0x7F - character used by Vietnamese IME for backspace
 
 
-def find_cli_js():
-    """Auto-detect Claude Code npm cli.js location."""
+def find_all_cli_js():
+    """Find all Claude Code npm cli.js locations."""
     home = Path.home()
     is_windows = platform.system() == 'Windows'
+    found = []
 
     if is_windows:
         search_dirs = [
@@ -48,12 +49,21 @@ def find_cli_js():
     for d in search_dirs:
         if d.exists():
             for cli_js in d.rglob('*/@anthropic-ai/claude-code/cli.js'):
-                return str(cli_js)
+                p = str(cli_js)
+                if p not in found:
+                    found.append(p)
+    return found
 
-    raise FileNotFoundError(
-        "Không tìm thấy Claude Code npm.\n"
-        "Cài đặt trước: npm install -g @anthropic-ai/claude-code"
-    )
+
+def find_cli_js():
+    """Auto-detect Claude Code npm cli.js location (first found)."""
+    all_paths = find_all_cli_js()
+    if not all_paths:
+        raise FileNotFoundError(
+            "Không tìm thấy Claude Code npm.\n"
+            "Cài đặt trước: npm install -g @anthropic-ai/claude-code"
+        )
+    return all_paths[0]
 
 
 def find_bug_block(content):
@@ -238,6 +248,7 @@ def show_help():
     print("  python3 patcher.py              Tự động phát hiện và fix")
     print("  python3 patcher.py --restore    Khôi phục từ backup")
     print("  python3 patcher.py --path FILE  Fix file cụ thể")
+    print("  python3 patcher.py --all        Fix tất cả bản cli.js tìm thấy")
     print("  python3 patcher.py --help       Hiển thị hướng dẫn")
     print("")
     print("https://github.com/manhit96/claude-code-vietnamese-fix")
@@ -262,7 +273,20 @@ def main():
             file_path = find_cli_js()
         return restore(file_path)
 
-    # Get path from --path or auto-detect
+    # Patch all copies (--all) or single file
+    if '--all' in args:
+        args.remove('--all')
+        all_paths = find_all_cli_js()
+        if not all_paths:
+            print("Không tìm thấy file cli.js nào.", file=sys.stderr)
+            return 1
+        ok = 0
+        for file_path in all_paths:
+            if patch(file_path) == 0:
+                ok += 1
+        print(f"\nĐã patch {ok}/{len(all_paths)} file.")
+        return 0 if ok else 1
+
     file_path = None
     if '--path' in args:
         idx = args.index('--path')
